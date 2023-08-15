@@ -1,0 +1,11 @@
+{
+  "name": "node.js-blogging_app",
+  "version": "1.0.0",
+  "description": "Blogging app",
+  "main": "server.js",
+  "scripts": {
+    "start": ""
+  },
+  "author": "Imadeddine Said Bouzair",
+  "license": "ISC"
+}
