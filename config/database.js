@@ -12,7 +12,7 @@ const connect = async () => {
       useUnifiedTopology: true,
     });
 
-    console.log('Connected to database seccussfuly');
+    console.log('Connected to database seccussfuly!');
   } catch (err) {
     console.log(err);
   }
