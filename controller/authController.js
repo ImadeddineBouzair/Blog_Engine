@@ -2,7 +2,6 @@ const User = require('../models/userModel');
 
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-
 const jwt = require('jsonwebtoken');
 
 const signToken = (id) => {
@@ -49,6 +48,18 @@ exports.registerUser = catchAsync(async (req, res, next) => {
   });
 
   const user = await newUser.save();
+
+  customResponse(user, 200, res);
+});
+
+exports.logIn = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!(email && password))
+    return next(new AppError('Email and password fields are required!', 400));
+
+  const user = await User.find({ email }).select('+password');
+  if (!(user && (await user.comparePassword(user.password))))
+    return next(new AppError('Invalid email or password!', 401));
 
   customResponse(user, 200, res);
 });
