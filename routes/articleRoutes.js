@@ -8,7 +8,9 @@ const {
   deleteArticle,
 } = require('../controller/bloggeController');
 
-router.route('/').get(getAllArticles).post(createArticle);
+const { protect } = require('../controller/authController');
+
+router.route('/').get(protect, getAllArticles).post(createArticle);
 router
   .route('/:id')
   .get(getOneArticle)
