@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 
+const crypto = require('crypto');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const jwt = require('jsonwebtoken');
@@ -56,7 +57,7 @@ exports.registerUser = catchAsync(async (req, res, next) => {
 
   const user = await newUser.save();
 
-  customResponse(user, 200, res);
+  customResponse(user, 201, res);
 });
 
 exports.logIn = catchAsync(async (req, res, next) => {
@@ -158,3 +159,66 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     );
   }
 });
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.resetToken)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user)
+    return next(new AppError('ResetToken is invalid or has expired!', 400));
+
+  // Reset password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+
+  // Removing these   data from database
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  // Saving the data
+  await user.save();
+
+  customResponse(user, 200, res);
+});
+
+exports.changePasswordForAuthUsers = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (!user)
+    return next(
+      new AppError('You are not logged in, PLeas log in to get access!', 401)
+    );
+
+  // Chech if  password credentials is correct
+  const { currentPassword, newPassword, passwordConfirm } = req.body;
+
+  if (!(currentPassword, newPassword, passwordConfirm))
+    return next(new AppError('All The fields are required!', 400));
+
+  if (!(await user.comparePassword(currentPassword)))
+    return next(new AppError('Your current password is wrong!', 401));
+
+  // if current password i correct then update the password
+  user.password = newPassword;
+  user.passwordConfirm = passwordConfirm;
+
+  await user.save();
+
+  customResponse(user, 200, res);
+});
+
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role))
+      return next(new AppError('Forbidden!', 403));
+
+    next();
+  };
+};
