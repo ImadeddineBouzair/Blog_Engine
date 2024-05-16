@@ -91,7 +91,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
 
   const decode = await asyncVerifyToken(token);
-  // console.log(decode.iat * 1000, Date.now());
 
   const currentUser = await User.findById(decode.id);
 

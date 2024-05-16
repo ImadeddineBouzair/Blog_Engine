@@ -77,6 +77,12 @@ userSchema.pre('save', function (next) {
   next();
 });
 
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
+
+  next();
+});
+
 // Inheretance methods
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
@@ -87,7 +93,7 @@ userSchema.methods.checkIfPassswordChanged = function (JWTIat) {
   if (!this.passwordChangedAt) return false;
 
   const changedTimestap = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
-  console.log(changedTimestap);
+
   return JWTIat < changedTimestap;
 };
 
