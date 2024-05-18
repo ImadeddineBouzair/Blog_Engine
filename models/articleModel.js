@@ -4,28 +4,44 @@ const articleSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, 'Article title is required!'],
     },
 
-    body: {
+    text: {
       type: String,
-      required: true,
+      required: [true, 'Article text is required'],
+      minlength: 3,
+      maxlength: 300,
     },
 
     author: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
-      required: true,
     },
 
     tags: [String],
 
-    imageUrl: String,
+    image: String,
   },
   {
     timestamps: true,
   }
 );
+
+articleSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'author',
+    select: 'name',
+  });
+
+  next();
+});
+
+articleSchema.methods.checkAuthor = function (userId) {
+  if (this.author.id === userId) return true;
+
+  return false;
+};
 
 const Article = mongoose.model('Article', articleSchema);
 

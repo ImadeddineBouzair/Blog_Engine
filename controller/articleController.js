@@ -31,11 +31,13 @@ exports.getOneArticle = catchAsync(async (req, res, next) => {
 });
 
 exports.createArticle = catchAsync(async (req, res, next) => {
-  const { title, text } = req.body;
+  const { title, text, image } = req.body;
 
   const article = new Article({
     title,
     text,
+    image,
+    author: req.user._id,
   });
 
   const newArticle = await article.save();
@@ -47,23 +49,44 @@ exports.createArticle = catchAsync(async (req, res, next) => {
 });
 
 exports.updateArticle = catchAsync(async (req, res, next) => {
-  const article = await Article.findByIdAndUpdate(req.params.id, req.body, {
+  // Check if the article exists
+  const article = await Article.findById(req.params.id);
+  if (!article)
+    return next(new AppError('No article found with this ID!', 400));
+
+  // Check if the user is the author of this article, If not he can't delete the article
+  if (!article.checkAuthor(req.user.id)) {
+    return next(
+      new AppError('You are not allowed to perform this action!', 400)
+    );
+  }
+
+  // Updating the article
+  const updatedArticle = await Article.findByIdAndUpdate(article.id, req.body, {
     new: true,
     runValidators: true,
   });
 
-  if (!article) return next(new AppError('No data found with this ID!', 400));
-
   res.status(200).json({
     status: 'updated with seccuss',
-    data: article,
+    data: updatedArticle,
   });
 });
 
 exports.deleteArticle = catchAsync(async (req, res, next) => {
-  const article = await Article.findByIdAndDelete(req.params.id);
+  // Check if the article exists
+  const article = await Article.findById(req.params.id);
+  if (!article)
+    return next(new AppError('No article found with this ID!', 400));
 
-  if (!article) return next(new AppError('No data found with this ID!', 400));
+  // Check if the user is the author of this article, If not he can't delete the article
+  if (!article.checkAuthor(req.user.id)) {
+    return next(
+      new AppError('You are not allowed to perform this action!', 400)
+    );
+  }
+
+  await Article.findByIdAndDelete(article.id);
 
   res.status(204).json({
     status: 'deleted with seccuss',

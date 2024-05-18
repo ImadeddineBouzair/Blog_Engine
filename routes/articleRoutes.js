@@ -6,18 +6,15 @@ const {
   createArticle,
   updateArticle,
   deleteArticle,
-} = require('../controller/bloggeController');
+} = require('../controller/articleController');
 
-const { protect, restrictTo } = require('../controller/authController');
+const { protect } = require('../controller/authController');
 
-router
-  .route('/')
-  .get(protect, restrictTo('admin'), getAllArticles)
-  .post(createArticle);
+router.route('/').get(getAllArticles).post(protect, createArticle);
 router
   .route('/:id')
   .get(getOneArticle)
-  .patch(updateArticle)
-  .delete(deleteArticle);
+  .patch(protect, updateArticle)
+  .delete(protect, deleteArticle);
 
 module.exports = router;
