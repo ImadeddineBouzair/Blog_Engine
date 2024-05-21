@@ -8,9 +8,14 @@ const {
   deleteArticle,
 } = require('../controller/articleController');
 
+const upload = require('../middlewares/multer');
+
 const { protect } = require('../controller/authController');
 
-router.route('/').get(getAllArticles).post(protect, createArticle);
+router
+  .route('/')
+  .get(getAllArticles)
+  .post(protect, upload.single('image'), createArticle);
 router
   .route('/:id')
   .get(getOneArticle)

@@ -3,6 +3,7 @@ const Article = require('../models/articleModel');
 const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const uploadImage = require('../utils/uploadImage');
 
 exports.getAllArticles = catchAsync(async (req, res, next) => {
   const articleQueryes = new APIFeatures(Article.find(), req.query)
@@ -31,12 +32,15 @@ exports.getOneArticle = catchAsync(async (req, res, next) => {
 });
 
 exports.createArticle = catchAsync(async (req, res, next) => {
-  const { title, text, image } = req.body;
+  const { title, text } = req.body;
+
+  // Uploading image to cloudinary
+  const image = await uploadImage(req, next);
 
   const article = new Article({
     title,
     text,
-    image,
+    image: image?.secure_url,
     author: req.user._id,
   });
 

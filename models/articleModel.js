@@ -45,4 +45,6 @@ articleSchema.methods.checkAuthor = function (userId) {
 
 const Article = mongoose.model('Article', articleSchema);
 
+Article.syncIndexes();
+
 module.exports = Article;

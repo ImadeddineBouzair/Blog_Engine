@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 
 const catchAsynch = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const uploadImage = require('../utils/uploadImage');
 
 const filterObject = (bodyObj, ...allowedFields) => {
   const newObj = {};
@@ -26,6 +27,7 @@ exports.getAllUsers = catchAsynch(async (req, res, next) => {
 });
 
 exports.updateAuthenticatedUser = catchAsynch(async (req, res, next) => {
+  console.log(req.file);
   if (req.body.password || req.body.passwordConfirm)
     return next(
       new AppError(
@@ -36,8 +38,6 @@ exports.updateAuthenticatedUser = catchAsynch(async (req, res, next) => {
 
   // Filtring unwanted fields from the body;
   const filtredBody = filterObject(req.body, 'name', 'email', 'photo');
-
-  console.log(filtredBody);
 
   //   Updating the user data
   const updatedUser = await User.findByIdAndUpdate(req.user._id, filtredBody, {

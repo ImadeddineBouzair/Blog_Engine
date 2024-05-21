@@ -5,6 +5,7 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
+const uploadImage = require('../utils/uploadImage');
 
 const asyncVerifyToken = (token) => {
   return new Promise(function (resolve, reject) {
@@ -44,7 +45,10 @@ const customResponse = (user, statusCode, res) => {
 };
 
 exports.registerUser = catchAsync(async (req, res, next) => {
-  const { name, email, password, passwordConfirm, role, photo } = req.body;
+  const { name, email, password, passwordConfirm, role } = req.body;
+
+  // apploadingImage to cloudinary
+  const image = await uploadImage(req, next);
 
   const newUser = new User({
     name,
@@ -52,7 +56,7 @@ exports.registerUser = catchAsync(async (req, res, next) => {
     password,
     passwordConfirm,
     role,
-    photo,
+    photo: image?.secure_url,
   });
 
   const user = await newUser.save();
