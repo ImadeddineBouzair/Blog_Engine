@@ -8,7 +8,10 @@ const filterObject = (bodyObj, ...allowedFields) => {
   const newObj = {};
 
   Object.keys(bodyObj).forEach((key) => {
-    if (allowedFields.includes(key)) newObj[key] = bodyObj[key];
+    if (allowedFields.includes(key))
+      bodyObj[key].secure_url
+        ? (newObj[key] = bodyObj[key].secure_url)
+        : (newObj[key] = bodyObj[key]);
   });
 
   return newObj;
@@ -27,7 +30,6 @@ exports.getAllUsers = catchAsynch(async (req, res, next) => {
 });
 
 exports.updateAuthenticatedUser = catchAsynch(async (req, res, next) => {
-  console.log(req.file);
   if (req.body.password || req.body.passwordConfirm)
     return next(
       new AppError(
@@ -36,8 +38,14 @@ exports.updateAuthenticatedUser = catchAsynch(async (req, res, next) => {
       )
     );
 
+  let customBody = req.body;
+
+  // Check if the user want to update the photo
+  if (req.file)
+    customBody = { ...req.body, photo: await uploadImage(req, next) };
+
   // Filtring unwanted fields from the body;
-  const filtredBody = filterObject(req.body, 'name', 'email', 'photo');
+  const filtredBody = filterObject(customBody, 'name', 'email', 'photo');
 
   //   Updating the user data
   const updatedUser = await User.findByIdAndUpdate(req.user._id, filtredBody, {
