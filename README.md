@@ -50,3 +50,4 @@ The main difference between development and production modes lies in error handl
 ## API Endpoints
 
 The documentation for the API endpoints can be found at this [documentation](https://documenter.getpostman.com/view/25731393/2sA3QqhYYs).
+If you have any questions or need further assistance, feel free to reach out (dev.dexteritydz@gmail.com). Happy coding!
